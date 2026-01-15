@@ -12,6 +12,8 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   async function sendMessage() {
     if (!input.trim() || loading) return;
 
@@ -21,14 +23,19 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const res = await fetch(
-        "https://bookish-space-enigma-g4w744vqr5rxf595-8000.app.github.dev/chat",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: userMessage.content }),
-        }
-      );
+      if (!API_BASE_URL) {
+        throw new Error("API base URL not configured");
+      }
+
+      const res = await fetch(`${API_BASE_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userMessage.content }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Backend error");
+      }
 
       const data = await res.json();
 
